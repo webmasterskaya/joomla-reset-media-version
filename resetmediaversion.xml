@@ -7,7 +7,7 @@
     <authorUrl>https://webmasterskaya.xyz</authorUrl>
     <copyright>Copyright (c) 2018 - 2020 Webmasterskaya. All rights reserved.</copyright>
     <license>GNU General Public License version 3 or later; see LICENSE.txt</license>
-    <version>__DEPLOY_VERSION__</version>
+    <version>1.0.0</version>
     <description>PLG_QUICKICON_RESETMEDIAVERSION_XML_DESCRIPTION</description>
 
     <!-- Scripts to run on installation -->
