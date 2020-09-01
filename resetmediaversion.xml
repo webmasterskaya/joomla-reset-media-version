@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" version="3.9" group="quickicon" method="upgrade">
+    <name>PLG_QUICKICON_RESETMEDIAVERSION</name>
+    <creationDate>01.09.2020</creationDate>
+    <author>Artem Vasilev - Webmasterskaya</author>
+    <authorEmail>dev@webmasterskaya.xyz</authorEmail>
+    <authorUrl>https://webmasterskaya.xyz</authorUrl>
+    <copyright>Copyright (c) 2018 - 2020 Webmasterskaya. All rights reserved.</copyright>
+    <license>GNU General Public License version 3 or later; see LICENSE.txt</license>
+    <version>__DEPLOY_VERSION__</version>
+    <description>PLG_QUICKICON_RESETMEDIAVERSION_XML_DESCRIPTION</description>
+
+    <!-- Scripts to run on installation -->
+    <scriptfile>script.php</scriptfile>
+
+    <!-- Language files -->
+    <languages folder="language">
+        <language tag="en-GB">en-GB/en-GB.plg_quickicon_resetmediaversion.ini</language>
+        <language tag="en-GB">en-GB/en-GB.plg_quickicon_resetmediaversion.sys.ini</language>
+        <language tag="ru-RU">ru-RU/ru-RU.plg_quickicon_resetmediaversion.ini</language>
+        <language tag="ru-RU">ru-RU/ru-RU.plg_quickicon_resetmediaversion.sys.ini</language>
+    </languages>
+
+    <!-- Plugin files -->
+    <files>
+        <filename plugin="resetmediaversion">resetmediaversion.php</filename>
+    </files>
+
+    <!-- Media files -->
+    <media destination="plg_quickicon_resetmediaversion" folder="media">
+        <folder>js</folder>
+    </media>
+
+    <!-- Update servers -->
+    <updateservers>
+        <server type="extension" priority="1" name="resetmediaversion">
+            https://webmasterskaya.xyz/updates?element=joomla-reset-media-version
+        </server>
+    </updateservers>
+</extension>
