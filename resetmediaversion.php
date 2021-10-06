@@ -1,9 +1,9 @@
 <?php
 /*
  * @package     Joomla - Reset media version
- * @version     1.0.0
+ * @version     1.1.0
  * @author      Artem Vasilev - webmasterskaya.xyz
- * @copyright   Copyright (c) 2018 - 2020 Webmasterskaya. All rights reserved.
+ * @copyright   Copyright (c) 2018 - 2021 Webmasterskaya. All rights reserved.
  * @license     GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  * @link        https://webmasterskaya.xyz/
  */
@@ -36,34 +36,75 @@ class PlgQuickiconResetMediaVersion extends CMSPlugin
 	 *
 	 * @param   string  $context  The calling context
 	 *
-	 * @return  array  A list of icon definition associative arrays, consisting of the
-	 *                 keys link, image, text and access.
+	 * @return array  keys link, image, text and access.
 	 *
 	 * @since   1.0
 	 */
-	public function onGetIcons($context)
+	public function onGetIcons(string $context): array
 	{
-		if ($context !== $this->params->get('context', 'mod_quickicon')
-			|| !Factory::getUser()->authorise('core.manage', 'com_config'))
+		if (!Factory::getUser()->authorise('core.manage', 'com_config')
+			|| $context !== $this->params->get('context', 'mod_quickicon'))
 		{
-			return;
+			return [];
 		}
 
-		$token = Session::getFormToken().'='. 1;
-		$link  = Uri::base()
-			.'index.php?option=com_ajax&plugin=resetmediaversion&group=quickicon&format=json&task=reset&'
-			.$token;
-		HTMLHelper::_(
-			'script',
-			'plg_quickicon_resetmediaversion/resetmediaversion.js',
-			array('version' => 'auto', 'relative' => true)
+		$request = Uri::buildQuery(
+			[
+				'option'                => 'com_ajax',
+				'plugin'                => 'resetmediaversion',
+				'group'                 => 'quickicon',
+				'format'                => 'json',
+				Session::getFormToken() => 1
+			]
 		);
+
+		$link = Uri::base() . 'index.php?' . $request;
+
+		$version = new Version();
+
+		Factory::getApplication()
+			->getDocument()
+			->addScriptOptions(
+				'js-reset-media-version',
+				[
+					'j4_compatible' => $version->isCompatible('4.0')
+				]
+			);
+
+		if ($version->isCompatible('4.0'))
+		{
+			Factory::getApplication()
+				->getDocument()
+				->getWebAssetManager()
+				->useScript('webcomponent.core-loader')
+				->registerAndUseScript(
+					'plg_quickicon_resetmediaversion',
+					'plg_quickicon_resetmediaversion/resetmediaversion.js',
+					[],
+					['defer' => true],
+					['core']
+				);
+
+			$image = 'fas fa-sync-alt';
+			$icon  = '';
+		}
+		else
+		{
+			HTMLHelper::_(
+				'script',
+				'plg_quickicon_resetmediaversion/resetmediaversion.js',
+				array('version' => 'auto', 'relative' => true)
+			);
+
+			$image = 'loop';
+			$icon  = 'header/icon-48-loop.png';
+		}
 
 		return array(
 			array(
 				'link'   => $link,
-				'image'  => 'loop',
-				'icon'   => 'header/icon-48-purge.png',
+				'image'  => $image,
+				'icon'   => $icon,
 				'text'   => Text::_('PLG_QUICKICON_RESETMEDIAVERSION_RESET'),
 				'id'     => 'plg_quickicon_resetmediaversion',
 				'group'  => 'MOD_QUICKICON_MAINTENANCE',
@@ -79,7 +120,7 @@ class PlgQuickiconResetMediaVersion extends CMSPlugin
 	 *
 	 * @since   1.0
 	 */
-	public function onAjaxResetMediaVersion()
+	public function onAjaxResetmediaversion(): void
 	{
 		if (!Session::checkToken('get'))
 		{
@@ -100,14 +141,18 @@ class PlgQuickiconResetMediaVersion extends CMSPlugin
 		$task = Factory::getApplication()->input->get('task', 'reset');
 
 		switch ($task):
-			case 'reset':
-				(new Version())->refreshMediaVersion();
-				echo new JsonResponse(true, Text::_('PLG_QUICKICON_RESETMEDIAVERSION_COMPLETE'), false);
-				Factory::getApplication()->close();
-				break;
-			default:
-				echo new JsonResponse(false, Text::_('PLG_QUICKICON_RESETMEDIAVERSION_COMPLETE'), false);
-				Factory::getApplication()->close();
+		case 'reset':
+			(new Version())->refreshMediaVersion();
+			echo new JsonResponse(
+				true, Text::_('PLG_QUICKICON_RESETMEDIAVERSION_COMPLETE'), false
+			);
+			break;
+		default:
+			echo new JsonResponse(
+				false, Text::_('PLG_QUICKICON_RESETMEDIAVERSION_COMPLETE'),
+				false
+			);
 		endswitch;
+		Factory::getApplication()->close();
 	}
 }

@@ -1,31 +1,45 @@
 /*
  * @package     Joomla - Reset media version
- * @version     1.0.0
+ * @version     1.1.0
  * @author      Artem Vasilev - webmasterskaya.xyz
- * @copyright   Copyright (c) 2018 - 2020 Webmasterskaya. All rights reserved.
+ * @copyright   Copyright (c) 2018 - 2021 Webmasterskaya. All rights reserved.
  * @license     GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  * @link        https://webmasterskaya.xyz/
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-	var plg_quickicon_resetmediaversion_items = document.querySelectorAll(
-		'#plg_quickicon_resetmediaversion > a');
+document.addEventListener('DOMContentLoaded', function () {
+	const options = Joomla.getOptions('js-reset-media-version'),
+		j4_compatible = !!options?.j4_compatible,
+		plg_quickicon_resetmediaversion_items = j4_compatible
+			? document.querySelectorAll('a#plg_quickicon_resetmediaversion')
+			: document.querySelectorAll('#plg_quickicon_resetmediaversion > a');
 
-	for (var i = 0, l = plg_quickicon_resetmediaversion_items.length; i <
-	l; i++) {
+	for (let i = 0, l = plg_quickicon_resetmediaversion_items.length; i < l; i++) {
 		plg_quickicon_resetmediaversion_items[i].addEventListener('click',
-			function(e) {
+			function (e) {
 				e.preventDefault();
 				e.stopPropagation();
-				var url = this.href;
+				const url = this.href;
+				const spinner = j4_compatible
+					? document.createElement('joomla-core-loader')
+					: undefined;
 
-				new Joomla.request({
+				Joomla.request({
 					url: url,
-					onBefore: function(xhr) {
-						Joomla.loadingLayer('show');
+					onBefore: function (xhr) {
+						if (!!spinner) {
+							document.body.appendChild(spinner);
+						} else {
+							Joomla.loadingLayer('show');
+						}
 					},
-					onSuccess: function(response, xhr) {
-						Joomla.loadingLayer('hide');
+					onSuccess: function (response, xhr) {
+						resetMediaVersionSleep(600);
+						if (!!spinner) {
+							spinner.parentNode.removeChild(spinner);
+						} else {
+							Joomla.loadingLayer('hide');
+						}
 
 						try {
 							var resp = JSON.parse(response);
@@ -33,22 +47,25 @@ document.addEventListener('DOMContentLoaded', function() {
 								Joomla.renderMessages(
 									{'success': [resp.message]});
 								window.scroll(0, 0);
-							}
-							else {
+							} else {
 								if (!!resp.message) {
 									Joomla.renderMessages(
 										{'error': [resp.message]});
 									window.scroll(0, 0);
 								}
 							}
-						}
-						catch (e) {
+						} catch (e) {
 							alert('Error! Look in the browser console');
 							console.log(e);
 						}
 					},
-					onError: function(xhr) {
-						Joomla.loadingLayer('hide');
+					onError: function (xhr) {
+						resetMediaVersionSleep(600);
+						if (!!spinner) {
+							spinner.parentNode.removeChild(spinner);
+						} else {
+							Joomla.loadingLayer('hide');
+						}
 						alert('Error! Look in the browser console');
 						console.log(xhr);
 					},
@@ -56,3 +73,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 	}
 });
+
+function resetMediaVersionSleep(milliseconds) {
+	const date = Date.now();
+	let currentDate = null;
+	do {
+		currentDate = Date.now();
+	} while (currentDate - date < milliseconds);
+}
