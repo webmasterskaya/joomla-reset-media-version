@@ -1,9 +1,9 @@
 <?php
 /*
  * @package     Joomla - Reset media version
- * @version     1.0.0
+ * @version     1.1.0
  * @author      Artem Vasilev - webmasterskaya.xyz
- * @copyright   Copyright (c) 2018 - 2020 Webmasterskaya. All rights reserved.
+ * @copyright   Copyright (c) 2018 - 2021 Webmasterskaya. All rights reserved.
  * @license     GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  * @link        https://webmasterskaya.xyz/
  */
@@ -18,7 +18,7 @@ class PlgQuickiconResetMediaVersionInstallerScript
 	 * @var string
 	 * @since  1.0.0
 	 */
-	protected $minPHPVersion = '5.6.0';
+	protected $minPHPVersion = '7.3.0';
 
 	/**
 	 * The minimal compatible version of Joomla!
