@@ -1,0 +1,59 @@
+name: Create Joomla installation package
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+
+  createReleasePackage:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install git zip unzip curl jq -y
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          check-latest: true
+
+      - name: Get npm cache directory
+        id: npm-cache-dir
+        run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
+
+      - name: Cache npm dependencies
+        id: npm-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Build js and css
+        run: |
+          npm run build
+
+      - name: Setup package version in manifests
+        run: find -type f -exec sed -i -E 's/(@version\s*\t*|<version>)([0-9a-zA-Z_\.-]+)/\1${{ github.ref_name }}/' {} \;
+
+      - name: Build artifact
+        run: |
+          export TERM=xterm
+          zip -r plg_quickicon_resetmediaversion.zip language media services src script.php resetmediaversion.xml -x "media/src/*"
+
+      - name: Upload artifact
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: plg_quickicon_resetmediaversion.zip
