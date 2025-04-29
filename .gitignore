@@ -3,3 +3,5 @@
 tmp
 vendor
 .php-cs-fixer.cache
+node_modules
+media/js
