@@ -12,6 +12,8 @@ use Joomla\CMS\Application\AdministratorApplication;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Installer\InstallerAdapter;
 use Joomla\CMS\Installer\InstallerScriptInterface;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Version;
 use Joomla\Database\DatabaseDriver;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
@@ -41,6 +43,24 @@ return new class () implements ServiceProviderInterface {
                  * @since  2.0.0
                  */
                 protected DatabaseDriver $db;
+
+                /**
+                 * Minimum PHP version required to install the extension.
+                 *
+                 * @var  string
+                 *
+                 * @since  2.0.0
+                 */
+                protected string $minimumPhp = '7.4';
+
+                /**
+                 * Minimum Joomla version required to install the extension.
+                 *
+                 * @var  string
+                 *
+                 * @since  2.0.0
+                 */
+                protected string $minimumJoomla = '4.2';
 
                 /**
                  * Constructor.
@@ -111,6 +131,11 @@ return new class () implements ServiceProviderInterface {
                  */
                 public function preflight(string $type, InstallerAdapter $adapter): bool
                 {
+                    // Check compatible
+                    if (!$this->checkCompatible()) {
+                        return false;
+                    }
+
                     return true;
                 }
 
@@ -147,6 +172,36 @@ return new class () implements ServiceProviderInterface {
 
                     // Update record
                     $this->db->updateObject('#__extensions', $plugin, ['type', 'element', 'folder']);
+                }
+
+                /**
+                 * Method to check compatible.
+                 *
+                 * @throws  \Exception
+                 *
+                 * @return  bool True on success, False on failure.
+                 *
+                 * @since  1.0.0
+                 */
+                protected function checkCompatible(): bool
+                {
+                    $app = Factory::getApplication();
+
+                    // Check joomla version
+                    if (!(new Version())->isCompatible($this->minimumJoomla)) {
+                        $app->enqueueMessage(Text::sprintf('PLG_QUICKICON_RESETMEDIAVERSION_WRONG_JOOMLA', $this->minimumJoomla), 'error');
+
+                        return false;
+                    }
+
+                    // Check PHP
+                    if (!(version_compare(PHP_VERSION, $this->minimumPhp) >= 0)) {
+                        $app->enqueueMessage(Text::sprintf('PLG_QUICKICON_RESETMEDIAVERSION_WRONG_PHP', $this->minimumPhp), 'error');
+
+                        return false;
+                    }
+
+                    return true;
                 }
             });
     }
