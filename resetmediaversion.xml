@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="plugin" version="3.9" group="quickicon" method="upgrade">
+<extension type="plugin" group="quickicon" method="upgrade">
     <name>PLG_QUICKICON_RESETMEDIAVERSION</name>
     <creationDate>01.09.2020</creationDate>
     <author>Artem Vasilev - Webmasterskaya</author>
     <authorEmail>dev@webmasterskaya.xyz</authorEmail>
     <authorUrl>https://webmasterskaya.xyz</authorUrl>
-    <copyright>Copyright (c) 2018 - 2021 Webmasterskaya. All rights reserved.</copyright>
+    <copyright>Copyright (c) 2018–2025 Webmasterskaya. All rights reserved.</copyright>
     <license>GNU General Public License version 3 or later; see LICENSE.txt</license>
-    <version>1.1.0</version>
+    <version>2.0.0</version>
     <description>PLG_QUICKICON_RESETMEDIAVERSION_XML_DESCRIPTION</description>
+    <namespace path="src">Joomla\Plugin\Quickicon\ResetMediaVersion</namespace>
 
     <!-- Scripts to run on installation -->
     <scriptfile>script.php</scriptfile>
@@ -23,7 +24,8 @@
 
     <!-- Plugin files -->
     <files>
-        <filename plugin="resetmediaversion">resetmediaversion.php</filename>
+        <folder plugin="resetmediaversion">services</folder>
+        <folder>src</folder>
     </files>
 
     <!-- Media files -->

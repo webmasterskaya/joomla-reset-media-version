@@ -8,131 +8,201 @@
  * @link        https://webmasterskaya.xyz/
  */
 
-defined('_JEXEC') or die;
+use Joomla\CMS\Application\AdministratorApplication;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Installer\InstallerAdapter;
+use Joomla\CMS\Installer\InstallerScriptInterface;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Version;
+use Joomla\Database\DatabaseDriver;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
 
-class PlgQuickiconResetMediaVersionInstallerScript
-{
-	/**
-	 * The minimal compatible version of PHP
-	 *
-	 * @var string
-	 * @since  1.0.0
-	 */
-	protected $minPHPVersion = '7.3.0';
+\defined('_JEXEC') or die;
 
-	/**
-	 * The minimal compatible version of Joomla!
-	 *
-	 * @var string
-	 * @since  1.0.0
-	 */
-	protected $minJVersion = '3.9.0';
+return new class () implements ServiceProviderInterface {
 
-	/**
-	 * Runs right before any installation action.
-	 *
-	 * @param   string  $type  Type of PreFlight action.
-	 *
-	 * @return  boolean True on success, false on failure.
-	 *
-	 * @throws  Exception
-	 *
-	 * @since  1.0.0
-	 */
-	function preflight($type)
-	{
-		// use Factory class
-		if (class_exists(\Joomla\CMS\Factory::class))
-		{
-			$factory = \Joomla\CMS\Factory::class;
-		}
-		else
-		{
-			$factory = JFactory::class;
-		}
+    public function register(Container $container)
+    {
+        $container->set(InstallerScriptInterface::class,
+            new class ($container->get(AdministratorApplication::class)) implements InstallerScriptInterface {
+                /**
+                 * The application object
+                 *
+                 * @var  AdministratorApplication
+                 *
+                 * @since  2.0.0
+                 */
+                protected AdministratorApplication $app;
 
-		// use Text class
-		if (class_exists(\Joomla\CMS\Language\Text::class))
-		{
-			$text = \Joomla\CMS\Language\Text::class;
-		}
-		else
-		{
-			$text = JText::class;
-		}
+                /**
+                 * The Database object.
+                 *
+                 * @var   DatabaseDriver
+                 *
+                 * @since  2.0.0
+                 */
+                protected DatabaseDriver $db;
 
-		// Check compatible PHP version
-		if (!(version_compare(PHP_VERSION, $this->minPHPVersion) >= 0))
-		{
-			$factory::getApplication()->enqueueMessage(
-				$text::sprintf(
-					'PLG_QUICKICON_RESETMEDIAVERSION_WRONG_PHP',
-					$this->minPHPVersion
-				),
-				'error'
-			);
+                /**
+                 * Minimum PHP version required to install the extension.
+                 *
+                 * @var  string
+                 *
+                 * @since  2.0.0
+                 */
+                protected string $minimumPhp = '7.4';
 
-			return false;
-		}
+                /**
+                 * Minimum Joomla version required to install the extension.
+                 *
+                 * @var  string
+                 *
+                 * @since  2.0.0
+                 */
+                protected string $minimumJoomla = '4.2';
 
-		// use Version class
-		if (class_exists(\Joomla\CMS\Version::class))
-		{
-			$version = new \Joomla\CMS\Version();
-		}
-		else
-		{
-			jimport('joomla.version');
-			$version = new JVersion();
-		}
+                /**
+                 * Constructor.
+                 *
+                 * @param   AdministratorApplication  $app  The application object.
+                 *
+                 * @since 2.0.0
+                 */
+                public function __construct(AdministratorApplication $app)
+                {
+                    $this->app = $app;
+                    $this->db  = Factory::getContainer()->get('DatabaseDriver');
+                }
 
-		// Check compatible Joomla version
-		if (!$version->isCompatible($this->minJVersion))
-		{
-			$factory::getApplication()->enqueueMessage(
-				$text::sprintf(
-					'PLG_QUICKICON_RESETMEDIAVERSION_WRONG_JOOMLA',
-					$this->minJVersion
-				),
-				'error'
-			);
+                /**
+                 * Function called after the extension is installed.
+                 *
+                 * @param   InstallerAdapter  $adapter  The adapter calling this method
+                 *
+                 * @return  boolean  True on success
+                 *
+                 * @since   2.0.0
+                 */
+                public function install(InstallerAdapter $adapter): bool
+                {
+                    $this->enablePlugin($adapter);
 
-			return false;
-		}
+                    return true;
+                }
 
-		return true;
-	}
+                /**
+                 * Function called after the extension is updated.
+                 *
+                 * @param   InstallerAdapter  $adapter  The adapter calling this method
+                 *
+                 * @return  boolean  True on success
+                 *
+                 * @since   2.0.0
+                 */
+                public function update(InstallerAdapter $adapter): bool
+                {
+                    return true;
+                }
 
-	/**
-	 * Runs right after any installation action.
-	 *
-	 * @param   string  $type  Type of PostFlight action.
-	 *
-	 * @return  boolean True on success, false on failure.
-	 *
-	 * @throws  Exception
-	 *
-	 * @since  1.0.0
-	 */
-	function postflight($type)
-	{
-		// We will publish the plugin if this is the installation
-		if ($type != 'update')
-		{
-			$db = \Joomla\CMS\Factory::getDbo();
-			$query = $db->getQuery(true);
-			$query->update($db->quoteName('#__extensions'))
-				->set(
-					$db->quoteName('enabled').' = 1'
-				)
-				->where(
-					$db->quoteName('name').' = '.$db->quote(
-						'plg_quickicon_resetmediaversion'
-					)
-				);
-			$db->setQuery($query)->execute();
-		}
+                /**
+                 * Function called after the extension is uninstalled.
+                 *
+                 * @param   InstallerAdapter  $adapter  The adapter calling this method
+                 *
+                 * @return  boolean  True on success
+                 *
+                 * @since   2.0.0
+                 */
+                public function uninstall(InstallerAdapter $adapter): bool
+                {
+                    return true;
+                }
 
-		return true;
-	}
-}
+                /**
+                 * Function called before extension installation/update/removal procedure commences.
+                 *
+                 * @param   string            $type     The type of change (install or discover_install, update, uninstall)
+                 * @param   InstallerAdapter  $adapter  The adapter calling this method
+                 *
+                 * @return  boolean  True on success
+                 *
+                 * @since   2.0.0
+                 */
+                public function preflight(string $type, InstallerAdapter $adapter): bool
+                {
+                    // Check compatible
+                    if (!$this->checkCompatible()) {
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                /**
+                 * Function called after extension installation/update/removal procedure commences.
+                 *
+                 * @param   string            $type     The type of change (install or discover_install, update, uninstall)
+                 * @param   InstallerAdapter  $adapter  The adapter calling this method
+                 *
+                 * @return  boolean  True on success
+                 *
+                 * @since   2.0.0
+                 */
+                public function postflight(string $type, InstallerAdapter $adapter): bool
+                {
+                    return true;
+                }
+
+                /**
+                 * Enable plugin after installation.
+                 *
+                 * @param   InstallerAdapter  $adapter  Parent object calling object.
+                 *
+                 * @since  2.0.0
+                 */
+                protected function enablePlugin(InstallerAdapter $adapter): void
+                {
+                    // Prepare plugin object
+                    $plugin          = new \stdClass();
+                    $plugin->type    = 'plugin';
+                    $plugin->element = $adapter->getElement();
+                    $plugin->folder  = (string)$adapter->getParent()->manifest->attributes()['group'];
+                    $plugin->enabled = 1;
+
+                    // Update record
+                    $this->db->updateObject('#__extensions', $plugin, ['type', 'element', 'folder']);
+                }
+
+                /**
+                 * Method to check compatible.
+                 *
+                 * @throws  \Exception
+                 *
+                 * @return  bool True on success, False on failure.
+                 *
+                 * @since  1.0.0
+                 */
+                protected function checkCompatible(): bool
+                {
+                    $app = Factory::getApplication();
+
+                    // Check joomla version
+                    if (!(new Version())->isCompatible($this->minimumJoomla)) {
+                        $app->enqueueMessage(Text::sprintf('PLG_QUICKICON_RESETMEDIAVERSION_WRONG_JOOMLA', $this->minimumJoomla), 'error');
+
+                        return false;
+                    }
+
+                    // Check PHP
+                    if (!(version_compare(PHP_VERSION, $this->minimumPhp) >= 0)) {
+                        $app->enqueueMessage(Text::sprintf('PLG_QUICKICON_RESETMEDIAVERSION_WRONG_PHP', $this->minimumPhp), 'error');
+
+                        return false;
+                    }
+
+                    return true;
+                }
+            });
+    }
+};
