@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @package     Joomla\Plugin\Quickicon\ResetMediaVersion\Extension
  * @subpackage
@@ -47,7 +48,7 @@ class Plugin extends CMSPlugin implements SubscriberInterface
     {
         return [
             'onGetIcons'              => 'getIcons',
-            'onAjaxResetmediaversion' => 'resetMediaVersion'
+            'onAjaxResetmediaversion' => 'resetMediaVersion',
         ];
     }
 
@@ -77,7 +78,7 @@ class Plugin extends CMSPlugin implements SubscriberInterface
                 'plugin'                => 'resetmediaversion',
                 'group'                 => 'quickicon',
                 'format'                => 'json',
-                Session::getFormToken() => 1
+                Session::getFormToken() => 1,
             ]
         );
 
@@ -90,7 +91,7 @@ class Plugin extends CMSPlugin implements SubscriberInterface
                 'id'     => 'plg_quickicon_resetmediaversion',
                 'group'  => 'MOD_QUICKICON_MAINTENANCE',
                 'access' => ['core.manage', 'com_config'],
-            ]
+            ],
         ];
 
         $document = $this->getApplication()->getDocument();
@@ -139,12 +140,15 @@ class Plugin extends CMSPlugin implements SubscriberInterface
             case 'reset':
                 (new Version())->refreshMediaVersion();
                 echo new JsonResponse(
-                    true, Text::_('PLG_QUICKICON_RESETMEDIAVERSION_COMPLETE'), false
+                    true,
+                    Text::_('PLG_QUICKICON_RESETMEDIAVERSION_COMPLETE'),
+                    false
                 );
                 break;
             default:
                 echo new JsonResponse(
-                    false, Text::_('PLG_QUICKICON_RESETMEDIAVERSION_COMPLETE'),
+                    false,
+                    Text::_('PLG_QUICKICON_RESETMEDIAVERSION_COMPLETE'),
                     false
                 );
         endswitch;
