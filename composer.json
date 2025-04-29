@@ -1,0 +1,22 @@
+{
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"friendsofphp/php-cs-fixer": "3.72"
+	},
+	"config": {
+		"optimize-autoloader": true,
+		"platform": {
+			"php": "7.4"
+		}
+	},
+	"scripts": {
+		"cs": [
+			"php-cs-fixer fix --ansi --dry-run --diff"
+		],
+		"cs-fix": [
+			"php-cs-fixer fix --ansi"
+		]
+	}
+}
