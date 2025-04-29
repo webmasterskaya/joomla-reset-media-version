@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @package     ${NAMESPACE}
  * @subpackage
@@ -17,7 +18,7 @@ use Joomla\Plugin\Quickicon\ResetMediaVersion\Extension\Plugin;
 
 \defined('_JEXEC') or die;
 
-return new class implements ServiceProviderInterface {
+return new class () implements ServiceProviderInterface {
     public function register(Container $container)
     {
         $container->set(

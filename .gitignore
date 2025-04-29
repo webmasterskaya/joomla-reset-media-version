@@ -1,3 +1,5 @@
 .idea
 *.zip
 tmp
+vendor
+.php-cs-fixer.cache
